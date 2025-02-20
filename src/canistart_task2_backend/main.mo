@@ -15,8 +15,20 @@ actor {
     favouriteNumber.put(caller, n);
   };
 
+  // Function to show the favorite number
   public shared({ caller }) func show_favorite_number() : async ?Nat {
     favouriteNumber.get(caller)
   }; 
-  
-}
+
+  // Challenge 4: Modified add_favorite_number function
+  public shared ({ caller }) func add_favourite_number_v2(n: Nat) : async Text {
+    switch (favouriteNumber.get(caller)) {
+      case (?_) { "You have already registered your number" };
+      case null {
+        favouriteNumber.put(caller, n);
+        "You have Successfully registered your number"
+      };
+    }
+  };
+
+};
