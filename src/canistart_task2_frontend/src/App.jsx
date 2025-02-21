@@ -4,7 +4,7 @@ import './app.css'
 import { Actor, HttpAgent } from '@dfinity/agent';
 import { idlFactory } from '../../declarations/canistart_task2_backend';
 
-// Replace with your canister ID
+// Canister ID
 const canisterId = 'c5kvi-uuaaa-aaaaa-qaaia-cai';
 
 function App() {
