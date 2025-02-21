@@ -1,30 +1,67 @@
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { canistart_task2_backend } from 'declarations/canistart_task2_backend';
+import './app.css'
+import { Actor, HttpAgent } from '@dfinity/agent';
+import { idlFactory } from '../../declarations/canistart_task2_backend';
+
+// Replace with your canister ID
+const canisterId = 'c5kvi-uuaaa-aaaaa-qaaia-cai';
 
 function App() {
-  const [greeting, setGreeting] = useState('');
+  const [agent, setAgent] = useState(null);
+  const [actor, setActor] = useState(null);
+  const [isAnonymous, setIsAnonymous] = useState(null);
+  const [favoriteNumber, setFavoriteNumber] = useState('');
+  const [message, setMessage] = useState('');
 
-  function handleSubmit(event) {
-    event.preventDefault();
-    const name = event.target.elements.name.value;
-    canistart_task2_backend.greet(name).then((greeting) => {
-      setGreeting(greeting);
-    });
-    return false;
-  }
+  useEffect(() => {
+    const init = async () => {
+      const agent = new HttpAgent();
+      await agent.fetchRootKey();
+      const actor = Actor.createActor(idlFactory, { agent, canisterId });
+      setAgent(agent);
+      setActor(actor);
+    };
+    init();
+  }, []);
+
+  const checkAnonymous = async () => {
+    if (actor) {
+      const result = await actor.isAnonymous();
+      setIsAnonymous(result);
+    }
+  };
+
+  const addFavoriteNumber = async () => {
+    if (actor && favoriteNumber) {
+      const result = await actor.add_favourite_number_v2(Number(favoriteNumber));
+      setMessage(result);
+    }
+  };
+
+  const showFavoriteNumber = async () => {
+    if (actor) {
+      const result = await actor.show_favorite_number();
+      setMessage(result ? `Your favorite number is ${result}` : 'You haven\'t registered a number yet');
+    }
+  };
 
   return (
-    <main>
-      <img src="/logo2.svg" alt="DFINITY logo" />
+    <div>
+      <h1>Favorite Number App</h1>
+      <button onClick={checkAnonymous}>Check if Anonymous</button>
+      {isAnonymous !== null && <p>Is Anonymous: {isAnonymous.toString()}</p>}
       <br />
-      <br />
-      <form action="#" onSubmit={handleSubmit}>
-        <label htmlFor="name">Enter your name: &nbsp;</label>
-        <input id="name" alt="Name" type="text" />
-        <button type="submit">Click Me!</button>
-      </form>
-      <section id="greeting">{greeting}</section>
-    </main>
+      <input 
+        type="number" 
+        value={favoriteNumber} 
+        onChange={(e) => setFavoriteNumber(e.target.value)} 
+        placeholder="Enter your favorite number"
+      />
+      <button onClick={addFavoriteNumber}>Add Favorite Number</button>
+      <button onClick={showFavoriteNumber}>Show Favorite Number</button>
+      {message && <p>{message}</p>}
+    </div>
   );
 }
 
